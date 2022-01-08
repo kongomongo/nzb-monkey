@@ -1446,14 +1446,23 @@ def main():
         tag = re.sub('([^{]*).*', '\\1', tag.strip().replace(' ', '.'))
 
         header = None
-        found = re.search(r'(?mi)(?:subject:|header:)\s+?(?:header:\s+)?(\S+)', clip.strip())
+        found = re.search(r'(?mi)(?:subject|header|tag)(?:[:=])\s*?(\S+)', clip.strip())
         if found is not None:
             header = found.group(1)
 
         password = ''
-        found = re.search(r'(?mi)(?:passwor[dt]|pw|pwd):\s*?(\S+)', clip.strip())
+        found = re.search(r'(?mi)(?:passwor[dt]|pw|pwd|pass)(?:[:=])\s*?(\S+)', clip.strip())
         if found is not None:
             password = found.group(1)
+
+        found = re.search(r'(?i)^nzblnk:[?&]([thp]=[^?&]+)[?&]([thp]=[^?&]+)[?&]([thp]=[^?&]+)', clip)
+        for g in found.groups():
+            if g[0] == "t":
+                tag = g[2:]
+            if g[0] == "h":
+                header = g[2:]
+            if g[0] == "p":
+                password = g[2:]
 
         nzbsrc = {
             'tag': tag,
