@@ -88,4 +88,5 @@ v0.1.0
 """
 
 __version__ = '0.2.7'
+__version__ = __version__ + 'PX'
 __requires__ = ['pyperclip', 'requests', 'configobj', 'colorama', 'cryptography']
