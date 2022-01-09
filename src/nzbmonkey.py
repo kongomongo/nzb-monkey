@@ -1447,15 +1447,15 @@ def main():
                 WAITING_TIME_LONG)
             return 1
 
-        found = re.search(r'(?mi)(^.*?S\d+E\d+.*$)', clip)
+        found = re.search(r'(?mi)^(?:(?:Titel|Title):?\s*)?(.*?S\d+E\d+.*$)', clip)
         if found is not None:
             tag = found.group(1)
         else:
-            found = re.search(r'(?mi)(^.*?(?:720p|1080p|x264|x265|XviD|BluRay).*$)', clip)
+            found = re.search(r'(?mi)^(?:(?:Titel|Title):?\s*)?(.*?(?:720p|1080p|x264|x265|XviD|BluRay).*$)', clip)
             if found is not None:
                 tag = found.group(1)
             else:
-                found = re.search(r'(?m)(^(.*)$)', clip.strip())
+                found = re.search(r'(?mi)^(?:(?:Titel|Title):?\s*)?(.*?)$', clip.strip())
                 if found is not None:
                     tag = found.group(1)
 
@@ -1472,13 +1472,14 @@ def main():
             password = found.group(1)
 
         found = re.search(r'(?i)^nzblnk:[?&]([thp]=[^?&]+)[?&]([thp]=[^?&]+)[?&]([thp]=[^?&]+)', clip)
-        for g in found.groups():
-            if g[0] == "t":
-                tag = g[2:]
-            if g[0] == "h":
-                header = g[2:]
-            if g[0] == "p":
-                password = g[2:]
+        if found is not None:
+            for g in found.groups():
+                if g[0] == "t":
+                    tag = g[2:]
+                if g[0] == "h":
+                    header = g[2:]
+                if g[0] == "p":
+                    password = g[2:]
 
         nzbsrc = {
             'tag': tag,
@@ -1490,6 +1491,8 @@ def main():
         print_and_wait(Col.FAIL + ' ERROR: Please provide a tag and header info.' + Col.OFF, WAITING_TIME_LONG)
         debug_output_close(debug_logfile, debug)
         return 1
+        
+    nzbsrc['tag'] = re.sub(r'[:/\\]', '', nzbsrc['tag'])
 
     print(""" Called {3}:\n
      - Tag     : {0}
