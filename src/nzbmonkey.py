@@ -46,7 +46,7 @@ from nzbmonkeyspec import getSpec
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-WAITING_TIME_LONG = 5
+WAITING_TIME_LONG = 864000
 WAITING_TIME_SHORT = 1
 REQUESTS_TIMEOUT = 20
 SAVE_STDOUT = sys.stdout
