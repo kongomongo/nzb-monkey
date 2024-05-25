@@ -1430,46 +1430,65 @@ def main():
                 basename(sys.argv[0])),
                 WAITING_TIME_LONG)
             return 1
-
-        found = re.search(r'(?mi)^(?:(?:Titel|Title):?\s*)?(.*?S\d+E\d+.*$)', clip)
+            
+        found = re.search(r'(?mi)^nzblnk://', clip)
         if found is not None:
-            tag = found.group(1)
+        
+            lnk = urlparse(clip)
+            if lnk.scheme.lower() != 'nzblnk':
+                print_and_wait(Col.FAIL + ' ERROR: ' + Col.OFF + 'Please provide a NZBLNK.', WAITING_TIME_LONG)
+                debug_output_close(debug_logfile, debug)
+                return 1
+
+            # parse query-part
+
+            lnk = parse_qs(lnk.query)
+            nzbsrc = {
+                'tag': lnk.get('t', [None])[0],
+                'header': lnk.get('h', [None])[0],
+                'pass': lnk.get('p', [None])[0]
+            }
         else:
-            found = re.search(r'(?mi)^(?:(?:Titel|Title):?\s*)?(.*?(?:720p|1080p|x264|x265|XviD|BluRay).*$)', clip)
+        
+            found = re.search(r'(?mi)^(?:(?:Titel|Title):?\s*)?(.*?S\d+E\d+.*$)', clip)
             if found is not None:
                 tag = found.group(1)
             else:
-                found = re.search(r'(?mi)^(?:(?:Titel|Title):?\s*)?(.*?)$', clip.strip())
+                found = re.search(r'(?mi)^(?:(?:Titel|Title):?\s*)?(.*?(?:720p|1080p|x264|x265|XviD|BluRay).*$)', clip)
                 if found is not None:
                     tag = found.group(1)
+                else:
+                    found = re.search(r'(?mi)^(?:(?:Titel|Title|tag):?\s*)?(.*?)$', clip.strip())
+                    if found is not None:
+                        tag = found.group(1)
 
-        tag = re.sub('([^{]*).*', '\\1', tag.strip().replace(' ', '.'))
+            tag = re.sub('([^{]*).*', '\\1', tag.strip().replace(' ', '.'))
 
-        header = None
-        found = re.search(r'(?mi)(?:subject|header|tag)(?:[:=])\s*?(\S+)', clip.strip())
-        if found is not None:
-            header = found.group(1)
+            header = None
+            found = re.search(r'(?mi)(?:subject|header)(?:[:=])\s*?(\S+)', clip.strip())
+            if found is not None:
+                header = found.group(1)
 
-        password = ''
-        found = re.search(r'(?mi)(?:passwor[dt]|pw|pwd|pass)(?:[:=])\s*?(\S+)', clip.strip())
-        if found is not None:
-            password = found.group(1)
+            password = ''
+            found = re.search(r'(?mi)(?:passwor[dt]|pw|pwd|pass)(?:[:=])\s*?(\S+)', clip.strip())
+            if found is not None:
+                password = found.group(1)
 
-        found = re.search(r'(?i)^nzblnk:[?&]([thp]=[^?&]+)[?&]([thp]=[^?&]+)[?&]([thp]=[^?&]+)', clip)
-        if found is not None:
-            for g in found.groups():
-                if g[0] == "t":
-                    tag = g[2:]
-                if g[0] == "h":
-                    header = g[2:]
-                if g[0] == "p":
-                    password = g[2:]
+            found = re.search(r'(?i)^nzblnk:[?&]([thp]=[^?&]+)[?&]([thp]=[^?&]+)[?&]([thp]=[^?&]+)', clip)
+            if found is not None:
+                for g in found.groups():
+                    if g[0] == "t":
+                        tag = g[2:]
+                    if g[0] == "h":
+                        header = g[2:]
+                    if g[0] == "p":
+                        password = g[2:]
 
-        nzbsrc = {
-            'tag': tag,
-            'header': header,
-            'pass': password
-        }
+            nzbsrc = {
+                'tag': tag,
+                'header': header,
+                'pass': password
+            }
 
     if nzbsrc['tag'] is None or nzbsrc['header'] is None:
         print_and_wait(Col.FAIL + ' ERROR: Please provide a tag and header info.' + Col.OFF, WAITING_TIME_LONG)
